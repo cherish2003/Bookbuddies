@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { clearPersistedAuth } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 export function Sidebar({
   userType,
@@ -24,6 +26,11 @@ export function Sidebar({
   sidebarOpen: boolean;
   toggleSidebar: () => void;
 }) {
+  const router = useRouter();
+  const handleLogout = () => {
+    clearPersistedAuth();
+    router.push("/auth");
+  };
   return (
     <div
       className={`bg-white shadow-md transition-all duration-300 ${
@@ -72,8 +79,7 @@ export function Sidebar({
             <Home className="mr-2 h-4 w-4" />
             {sidebarOpen && "Dashboard"}
           </Button>
-
-          {userType === "owner" ? (
+          {userType === "owner" && (
             <Button
               variant={activeTab === "my-books" ? "secondary" : "ghost"}
               className={`w-full justify-start ${
@@ -84,18 +90,19 @@ export function Sidebar({
               <BookMarked className="mr-2 h-4 w-4" />
               {sidebarOpen && "My Books"}
             </Button>
-          ) : (
-            <Button
-              variant={activeTab === "browse" ? "secondary" : "ghost"}
-              className={`w-full justify-start ${
-                !sidebarOpen && "justify-center"
-              }`}
-              onClick={() => setActiveTab("browse")}
-            >
-              <BookOpen className="mr-2 h-4 w-4" />
-              {sidebarOpen && "Browse Books"}
-            </Button>
           )}
+
+          <Button
+            variant={activeTab === "browse" ? "secondary" : "ghost"}
+            className={`w-full justify-start ${
+              !sidebarOpen && "justify-center"
+            }`}
+            onClick={() => setActiveTab("browse")}
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            {sidebarOpen && "Browse Books"}
+          </Button>
+
           {userType === "owner" && (
             <Button
               variant={activeTab === "requests" ? "secondary" : "ghost"}
@@ -116,6 +123,7 @@ export function Sidebar({
             className={`w-full justify-start text-red-500 hover:text-red-600 ${
               !sidebarOpen && "justify-center"
             }`}
+            onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
             {sidebarOpen && "Logout"}

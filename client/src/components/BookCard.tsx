@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Card,
   CardHeader,
@@ -14,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
 import { requestBook } from "@/store/slices/requestSlice";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
 
 interface BookCardProps {
   book: {
@@ -36,7 +35,13 @@ export function BookCard({ book }: BookCardProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { loading } = useSelector((state: RootState) => state.books);
-  console.log(loading);
+
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [bookStatus, setBookStatus] = useState(book.status);
+  useEffect(() => {
+    setBookStatus(book.status);
+  }, [book.status]);
+
   const handleRequest = () => {
     if (!user) {
       toast.error("Please log in to request a book.");
@@ -48,14 +53,20 @@ export function BookCard({ book }: BookCardProps) {
       return;
     }
 
+    setIsRequesting(true);
+
     dispatch(requestBook({ bookId: book._id }))
       .unwrap()
       .then(() => {
+        setBookStatus("requested");
         toast.success("Book request sent successfully!");
       })
       .catch((err) => {
         console.error(err);
         toast.error("Failed to request the book.");
+      })
+      .finally(() => {
+        setIsRequesting(false);
       });
   };
 
@@ -78,18 +89,18 @@ export function BookCard({ book }: BookCardProps) {
           <p className="text-sm">
             <span className="font-medium">Location:</span> {book.location}
           </p>
-          {book.status && (
+          {bookStatus && (
             <p className="text-sm">
               <span className="font-medium">Status:</span>{" "}
               <Badge
-                variant={book.status === "available" ? "default" : "secondary"}
+                variant={bookStatus === "available" ? "default" : "secondary"}
                 className={
-                  book.status === "available"
+                  bookStatus === "available"
                     ? "bg-green-100 text-green-800"
                     : "bg-yellow-100 text-yellow-800"
                 }
               >
-                {book.status}
+                {bookStatus === "available" ? "Available" : "Requested"}
               </Badge>
             </p>
           )}
@@ -101,10 +112,20 @@ export function BookCard({ book }: BookCardProps) {
         </div>
       </CardContent>
       <CardFooter>
-        {book.status === "available" && (
-          <Button className="w-full" onClick={handleRequest} disabled={loading}>
+        {bookStatus === "available" && user?.role == "seeker" && (
+          <Button
+            className="w-full"
+            onClick={handleRequest}
+            disabled={isRequesting || loading}
+          >
             <BookOpen className="mr-2 h-4 w-4" />
-            {loading ? "Requesting..." : "Request Book"}
+            {isRequesting || loading ? "Requesting..." : "Request Book"}
+          </Button>
+        )}
+        {bookStatus !== "available" && (
+          <Button className="w-full" disabled>
+            <BookOpen className="mr-2 h-4 w-4" />
+            Book Not Available
           </Button>
         )}
       </CardFooter>

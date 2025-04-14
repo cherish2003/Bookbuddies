@@ -86,9 +86,7 @@ export default function DashboardPage() {
           {activeTab === "my-books" && userType === "owner" && (
             <BookOwnerView />
           )}
-          {activeTab === "browse" && userType === "seeker" && (
-            <BookSeekerView />
-          )}
+          {activeTab === "browse" && <BookSeekerView />}
           {activeTab === "requests" && <RequestsView />}
         </main>
       </div>
