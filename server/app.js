@@ -10,8 +10,11 @@ require("dotenv").config();
 const app = express();
 
 connectDB();
-
-app.use(cors());
+const corsOptions = {
+  origin: `${process.env.FRONTEND_URL}`,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+};
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
